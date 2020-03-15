@@ -1,6 +1,6 @@
 {
   "name": "react-responsive-art-cli",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,6 @@
   "author": "Mikel Arnaiz",
   "license": "ISC",
   "bin": {
-    "addNumber": "cli.js"
+    "addNumber": "addNumber.js"
   }
 }
