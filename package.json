@@ -1,6 +1,6 @@
 {
   "name": "react-responsive-art-cli",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,5 +10,9 @@
   "license": "ISC",
   "bin": {
     "addNumber": "addNumber.js"
+  },
+  "dependencies": {
+    "@types/yargs": "^15.0.4",
+    "yargs": "^15.3.0"
   }
 }
