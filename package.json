@@ -1,21 +1,23 @@
 {
   "name": "react-responsive-art-cli",
-  "version": "0.0.1-alpha.8",
+  "version": "0.0.1-alpha.10",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p .",
+    "prepublishOnly": "npm run build"
   },
   "author": "Mikel Arnaiz",
   "license": "ISC",
   "bin": {
-    "convert-images": "bin/src/convertImages.js"
+    "convert-images": "bin/index.js"
   },
   "dependencies": {
     "yargs": "^15.3.0"
   },
   "devDependencies": {
+    "@types/node": "^13.9.1",
     "@types/yargs": "^15.0.4",
     "typescript": "^3.8.3"
   }
