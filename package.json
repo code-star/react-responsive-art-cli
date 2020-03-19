@@ -6,14 +6,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p .",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "images": "convert-images --size 320 480 640 --format jpeg jp2 webp"
   },
   "author": "Mikel Arnaiz",
   "license": "ISC",
   "bin": {
-    "convert-images": "bin/index.js"
+    "convert-images": "bin/index.js",
+    "foo": "./bin/foo.js"
   },
   "dependencies": {
+    "handlebars": "^4.7.3",
     "yargs": "^15.3.0"
   },
   "devDependencies": {
