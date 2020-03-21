@@ -14,7 +14,7 @@ import path from "path";
 import handlebars from "handlebars";
 import glob from "glob";
 
-var { outputSizes, outputFormats, inputFilePattern } = yargs
+var { outputSizes, outputFormats, inputFileGlob, outputDirectoryPath } = yargs
   .option("outputSizes", {
     alias: "s",
     type: "array",
@@ -28,8 +28,14 @@ var { outputSizes, outputFormats, inputFilePattern } = yargs
     description: "Output images formats",
     demandOption: true
   })
-  .option("inputFilePattern", {
-    alias: "-p",
+  .option("outputDirectoryPath", {
+    alias: "p",
+    type: "string",
+    description: "Output path",
+    default: "output"
+  })
+  .option("inputFileGlob", {
+    alias: "-g",
     type: "string",
     description: "Glob pattern",
     default: "**/*.jpeg"
@@ -37,7 +43,8 @@ var { outputSizes, outputFormats, inputFilePattern } = yargs
 
 console.log(outputSizes);
 console.log(outputFormats);
-console.log(inputFilePattern);
+console.log(inputFileGlob);
+console.log(outputDirectoryPath);
 
 const templateContent = fs.readFileSync(
   path.resolve(__dirname, "../src/templates/ResponsibleImage.tsx.template"),
@@ -54,27 +61,38 @@ const getQualityCommand = (ext: string) => {
   return ext === "jp2" ? "-define jp2:rate=32" : "-quality 90";
 };
 
-const getSizesCommand = (format: string) => {
+const getSizesCommand = (
+  fileName: string,
+  format: string,
+  outputPath: string
+) => {
   const qualityCommand = getQualityCommand(format);
   return outputSizes.reduce<string>((accSize, currSize) => {
+    // ( -clone 0 -resize ${currSize} ${qualityCommand} -set filename:width %t_%w -write ${outputPath}/${fileName}/%[filename:width].${format} +delete ) )`;
     return `${accSize}
-      ( -clone 0 -resize ${currSize} ${qualityCommand} -set filename:width %t_%w -write output/$imageName/%[filename:width].${format} +delete ) )`;
+      ( -clone 0 -resize ${currSize} ${qualityCommand} -write ${outputPath}/${fileName}/${fileName}_${currSize}.${format} +delete ) )`;
   }, "");
 };
 
-const getConvertCommand = (file: string) => {
+const getConvertCommand = (filePath: string, outputPath: string) => {
+  const fileParts = filePath.split("/");
+  const fileName = fileParts[fileParts.length - 1].split(".")[0];
+
   return outputFormats.reduce<string>((accFormats, currFormat) => {
     return `${accFormats}
-        ${getSizesCommand(currFormat.toString())}`;
-  }, `magick convert ${file} `);
+        ${getSizesCommand(fileName, currFormat.toString(), outputPath)}`;
+  }, `magick convert ${filePath} `);
 };
 
-glob(inputFilePattern, (err, files) => {
+glob(inputFileGlob, (err, files) => {
   console.log(err);
   console.log(files);
 
-  files.forEach(file => {
-    const convertCommand = getConvertCommand(file);
+  // const outputPath = path.resolve(__dirname, outputDirectoryPath);
+  const outputPath = outputDirectoryPath;
+
+  files.forEach(filePath => {
+    const convertCommand = getConvertCommand(filePath, outputPath);
     console.log(convertCommand);
   });
 });
