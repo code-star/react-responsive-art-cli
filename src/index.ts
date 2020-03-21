@@ -12,33 +12,69 @@ import yargs from "yargs";
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
+import glob from "glob";
 
-var { size, format } = yargs
-  .option("size", {
+var { outputSizes, outputFormats, inputFilePattern } = yargs
+  .option("outputSizes", {
     alias: "s",
     type: "array",
-    description: "Image size",
+    description: "Output image sizes",
     demandOption: true
   })
-  .option("format", {
+  .option("outputFormats", {
     alias: "f",
     type: "array",
     choices: formats,
-    description: "Images format",
+    description: "Output images formats",
     demandOption: true
+  })
+  .option("inputFilePattern", {
+    alias: "-p",
+    type: "string",
+    description: "Glob pattern",
+    default: "**/*.jpeg"
   }).argv;
-console.log(size);
-console.log(format);
+
+console.log(outputSizes);
+console.log(outputFormats);
+console.log(inputFilePattern);
 
 const templateContent = fs.readFileSync(
   path.resolve(__dirname, "../src/templates/ResponsibleImage.tsx.template"),
   "UTF-8"
 );
 
-const template = handlebars.compile(templateContent);
-const result = template({
+const template: string = handlebars.compile(templateContent)({
   imageImports: "here imports",
   srcSet: "the srcSets"
 });
+console.log(template);
 
-console.log(result);
+const getQualityCommand = (ext: string) => {
+  return ext === "jp2" ? "-define jp2:rate=32" : "-quality 90";
+};
+
+const getSizesCommand = (format: string) => {
+  const qualityCommand = getQualityCommand(format);
+  return outputSizes.reduce<string>((accSize, currSize) => {
+    return `${accSize}
+      ( -clone 0 -resize ${currSize} ${qualityCommand} -set filename:width %t_%w -write output/$imageName/%[filename:width].${format} +delete ) )`;
+  }, "");
+};
+
+const getConvertCommand = (file: string) => {
+  return outputFormats.reduce<string>((accFormats, currFormat) => {
+    return `${accFormats}
+        ${getSizesCommand(currFormat.toString())}`;
+  }, `magick convert ${file} `);
+};
+
+glob(inputFilePattern, (err, files) => {
+  console.log(err);
+  console.log(files);
+
+  files.forEach(file => {
+    const convertCommand = getConvertCommand(file);
+    console.log(convertCommand);
+  });
+});
