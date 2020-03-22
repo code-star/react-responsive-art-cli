@@ -20,7 +20,8 @@ var {
   outputFormats,
   inputFileGlob,
   outputDirectoryPath,
-  verbose
+  verbose,
+  quality
 } = yargs
   .option("outputSizes", {
     alias: "s",
@@ -40,6 +41,12 @@ var {
     type: "string",
     description: "Output path",
     default: "output"
+  })
+  .option("quality", {
+    alias: "q",
+    type: "number",
+    description: "Output image quality",
+    default: 90
   })
   .option("inputFileGlob", {
     alias: "-g",
@@ -69,16 +76,17 @@ const template: string = handlebars.compile(templateContent)({
 });
 console.log(template);
 
-const getQualityCommand = (ext: string) => {
-  return ext === "jp2" ? "-define jp2:rate=32" : "-quality 90";
+const getQualityCommand = (ext: string, quality: number) => {
+  return ext === "jp2" ? "-define jp2:rate=32" : `-quality ${quality}`;
 };
 
 const getSizesCommand = (
   fileName: string,
   format: string,
-  outputPath: string
+  outputPath: string,
+  quality: number
 ) => {
-  const qualityCommand = getQualityCommand(format);
+  const qualityCommand = getQualityCommand(format, quality);
 
   execSync(`mkdir -p ${outputPath}/${fileName}`);
 
@@ -87,7 +95,11 @@ const getSizesCommand = (
   }, "");
 };
 
-const getConvertCommand = (filePath: string, outputPath: string) => {
+const getConvertCommand = (
+  filePath: string,
+  outputPath: string,
+  quality: number
+) => {
   const fileParts = filePath.split("/");
   const fileName = fileParts[fileParts.length - 1].split(".")[0];
 
@@ -96,7 +108,8 @@ const getConvertCommand = (filePath: string, outputPath: string) => {
       return `${accFormats} ${getSizesCommand(
         fileName,
         currFormat.toString(),
-        outputPath
+        outputPath,
+        quality
       )}`;
     }, `magick convert ${filePath}`) + "null:"
   );
@@ -110,7 +123,7 @@ glob(inputFileGlob, (_err, files) => {
   const outputPath = outputDirectoryPath;
 
   files.forEach(filePath => {
-    const convertCommand = getConvertCommand(filePath, outputPath);
+    const convertCommand = getConvertCommand(filePath, outputPath, quality);
 
     if (verbose) {
       console.log(`Converting file ${filePath}:`);
