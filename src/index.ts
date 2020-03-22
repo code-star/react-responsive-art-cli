@@ -11,9 +11,9 @@ import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
 import glob from "glob";
-import { execSync } from "child_process";
 import { getArguments } from "./getArguments";
 import { getTemplates } from "./getConvertImagesCommand";
+import { convertImages } from "./convertImages";
 
 const { sizes, formats, outDir, quality, pattern, verbose } = getArguments();
 
@@ -32,20 +32,17 @@ glob(pattern, (_err, files) => {
   // console.log(err);
   // console.log(files);
 
+  files.forEach(file => {
+    convertImages(file, formats, sizes, outDir, quality);
+  });
+
   files.forEach(filePath => {
-    const convertCommand = getTemplates(
-      filePath,
-      sizes,
-      formats,
-      outDir,
-      quality
-    );
+    const convertCommand = getTemplates(filePath, sizes, formats, outDir);
 
     if (verbose) {
       console.log(`Converting file ${filePath}:`);
       console.log(convertCommand);
       console.log("");
     }
-    execSync(convertCommand.conversionCommand);
   });
 });

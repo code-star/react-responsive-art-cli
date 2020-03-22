@@ -2,7 +2,6 @@ import { OutputFormat } from "./OutputFormat";
 import { getFromSizes } from "./getSizesCommand";
 
 export type Templates = Readonly<{
-  conversionCommand: string;
   importsTemplate: string;
   srcSetTemplate: string;
 }>;
@@ -14,14 +13,12 @@ export const getTemplates = (
   filePath: string,
   sizes: number[],
   formats: OutputFormat[],
-  outputPath: string,
-  quality: number
+  outputPath: string
 ): Templates => {
   const fileParts = filePath.split("/");
   const fileName = fileParts[fileParts.length - 1].split(".")[0];
 
   const initialTemplates: Templates = {
-    conversionCommand: `magick convert ${filePath} \\`,
     importsTemplate: "",
     srcSetTemplate: `{
     `
@@ -30,18 +27,9 @@ export const getTemplates = (
   return formats.reduce<Templates>((acc, currFormat, index, list) => {
     const isLastFormat = isLast(index, list);
 
-    const fromSizes = getFromSizes(
-      sizes,
-      fileName,
-      currFormat,
-      outputPath,
-      quality
-    );
+    const fromSizes = getFromSizes(sizes, fileName, currFormat, outputPath);
 
     return {
-      conversionCommand: `${acc.conversionCommand}${
-        fromSizes.conversionCommand
-      }${isLastFormat ? "null:" : ""}`,
       importsTemplate: `${acc.importsTemplate}${fromSizes.importsTemplate}`,
       srcSetTemplate: `${acc.srcSetTemplate}
           ${currFormat}: {
