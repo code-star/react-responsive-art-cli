@@ -1,7 +1,7 @@
-import { getTemplates } from "./getSizesCommand";
 import { OutputFormat } from "./OutputFormat";
+import { getFromSizes } from "./getSizesCommand";
 
-export type Conversion = Readonly<{
+export type Templates = Readonly<{
   conversionCommand: string;
   importsTemplate: string;
   srcSetTemplate: string;
@@ -10,95 +10,48 @@ export type Conversion = Readonly<{
 const isLast = <A>(index: number, list: A[]): boolean =>
   index === list.length - 1;
 
-export const getStuff = (
+export const getTemplates = (
   filePath: string,
   sizes: number[],
   formats: OutputFormat[],
   outputPath: string,
   quality: number
-): Conversion => {
+): Templates => {
   const fileParts = filePath.split("/");
   const fileName = fileParts[fileParts.length - 1].split(".")[0];
 
-  return formats.reduce<Conversion>(
-    (acc, currFormat, index, list) => {
-      const isLastFormat = isLast(index, list);
+  const initialTemplates: Templates = {
+    conversionCommand: `magick convert ${filePath} \\`,
+    importsTemplate: "",
+    srcSetTemplate: `{
+    `
+  };
 
-      const fromSizes = sizes.reduce(
-        (accSizes, currSize) => {
-          const templates = getTemplates(
-            fileName,
-            currSize,
-            currFormat,
-            outputPath,
-            quality
-          );
+  return formats.reduce<Templates>((acc, currFormat, index, list) => {
+    const isLastFormat = isLast(index, list);
 
-          return {
-            conversionCommand: `${accSizes.conversionCommand}
-            ${templates.conversionCommand}`,
+    const fromSizes = getFromSizes(
+      sizes,
+      fileName,
+      currFormat,
+      outputPath,
+      quality
+    );
 
-            importsTemplate: `${accSizes.importsTemplate}
-            ${templates.importsTemplate},`,
-
-            srcSetTemplate: `${accSizes.srcSetTemplate}
-            ${templates.srcSetTemplate}`
-          };
-        },
-        {
-          conversionCommand: acc.conversionCommand,
-          importsTemplate: "",
-          srcSetTemplate: ""
-        }
-      );
-
-      return {
-        ...fromSizes,
-        conversionCommand: `${fromSizes.conversionCommand}${
-          isLastFormat ? "null:" : ""
-        }`,
-        srcSetTemplate: `${currFormat}: {
-          ${fromSizes.srcSetTemplate}
-        },
-        ${acc.srcSetTemplate}`
-      };
-
-      // return {
-      //   ...acc,
-      //   conversionCommand: `${}`
-      //   // conversionCommand: getConversionCommand(
-      //   //   acc.conversionCommand,
-      //   //   currFormat,
-      //   //   isLast,
-      //   //   fileName,
-      //   //   sizes,
-      //   //   outputPath,
-      //   //   quality
-      //   // )
-      // };
-    },
-    {
-      conversionCommand: `magick convert ${filePath}`,
-      importsTemplate: "",
-      srcSetTemplate: ""
-    }
-  );
+    return {
+      conversionCommand: `${acc.conversionCommand}${
+        fromSizes.conversionCommand
+      }${isLastFormat ? "null:" : ""}`,
+      importsTemplate: `${acc.importsTemplate}${fromSizes.importsTemplate}`,
+      srcSetTemplate: `${acc.srcSetTemplate}
+          ${currFormat}: {
+            ${fromSizes.srcSetTemplate}
+          },${
+            isLastFormat
+              ? `
+        }`
+              : ""
+          }`
+    };
+  }, initialTemplates);
 };
-
-// const getConversionCommand = (
-//   prevConversionCommand: string,
-//   format: OutputFormat,
-//   isLast: boolean,
-//   fileName: string,
-//   sizes: number[],
-//   outputPath: string,
-//   quality: number
-// ): string => {
-//   return `${prevConversionCommand} ${getSizesCommand(
-//     fileName,
-//     sizes,
-//     format,
-//     outputPath,
-//     quality
-//   )}${isLast ? "null:" : ""}`;
-// };
