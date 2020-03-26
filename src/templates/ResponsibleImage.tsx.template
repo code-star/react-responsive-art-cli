@@ -1,13 +1,16 @@
 import * as React from 'react';
-import { ResponsiveImage } from '../../src/ResponsiveImage/ResponsiveImage';
-import { EfficientImageSize } from '../../src/ResponsiveImage/ResponsiveImageSrcSet';
+import { ResponsiveImage } from 'react-responsive-art';
 
-{{imageImports}}
+{{{imageImports}}}
 
-export const Image = () => (
-  <ResponsiveImage<EfficientImageSize>
-    alt=""
-    sizes=""
-    srcSet={ {{srcSet}} }
+const srcSet = {
+ {{srcSet}} 
+}
+
+export const Image_{{fileName}} = () => (
+  <ResponsiveImage<{{sizes}}>
+    alt=''
+    sizes=''
+    srcSet={srcSet}
   />
 )

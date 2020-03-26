@@ -1,19 +1,17 @@
 {
   "name": "react-responsive-art-cli",
-  "version": "0.0.1-alpha.10",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p .",
-    "prepublishOnly": "npm run build",
-    "images": "convert-images --size 320 480 640 --format jpeg jp2 webp"
+    "prepublishOnly": "npm run build"
   },
   "author": "Mikel Arnaiz",
   "license": "ISC",
   "bin": {
-    "convert-images": "bin/index.js",
-    "foo": "./bin/foo.js"
+    "convert-images": "bin/index.js"
   },
   "dependencies": {
     "glob": "^7.1.6",

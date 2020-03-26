@@ -1,5 +1,5 @@
 import yargs from "yargs";
-import { OutputFormat, OUTPUT_FORMAT_CHOICES } from "./OutputFormat";
+import { OutputFormat, OUTPUT_FORMAT_CHOICES } from "./constants";
 
 type Arguments = Readonly<{
   sizes: number[];
