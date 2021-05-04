@@ -16,7 +16,7 @@
   "dependencies": {
     "glob": "^7.1.6",
     "handlebars": "^4.7.3",
-    "yargs": "^15.3.0"
+    "yargs": "^17.0.1"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
